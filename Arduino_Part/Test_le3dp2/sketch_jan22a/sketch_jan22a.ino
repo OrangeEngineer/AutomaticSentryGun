@@ -61,18 +61,18 @@ PT_THREAD(PanMotorDriverState(struct pt* pt))
     PT_BEGIN(pt);
     while (1)
     {
-      if(joyX < 490){
+      if(joyX < 450){
         digitalWrite(7,HIGH);      //IN1 = HIGH  
         digitalWrite(8,LOW);       //IN2 = LOW -> MotorA get forward.
-        analogWrite(11,(512 - joyX/2));       //PWM Control of MotorA
-      } else if(joyX > 530) {
+        analogWrite(12,255);       //PWM Control of MotorA
+      } else if(joyX > 550) {
         digitalWrite(7,LOW);        //IN1 = LOW
         digitalWrite(8,HIGH);       //IN2 = HIGH -> MotorA get backward.
-        analogWrite(11,(joyX - 512/2));         //PWM Control of MotorB
+        analogWrite(12,255);         //PWM Control of MotorB
       } else {
         digitalWrite(7,HIGH);       //IN1 = HIG
         digitalWrite(8,HIGH);       //IN2 = HIGH -> MotorB stop
-        analogWrite(11,0);          //PWM = 0 
+        analogWrite(12,0);          //PWM = 0 
       }
       PT_DELAY(pt, 50, ts);
     }
@@ -85,14 +85,14 @@ PT_THREAD(TiltMotorDriverState(struct pt* pt))
     PT_BEGIN(pt);
     while (1)
     {
-      if(joyY < 490){
+      if(joyY < 450){
         digitalWrite(4,HIGH);      //IN1 = HIGH 
         digitalWrite(5,LOW);       //IN2 = LOW -> MotorB get forward.
-        analogWrite(6,(512 - joyY/2));       //PWM Control of MotorB
-      } else if(joyY > 530) {
+        analogWrite(6,255);       //PWM Control of MotorB
+      } else if(joyY > 550) {
         digitalWrite(4,LOW);        //IN1 = LOW
         digitalWrite(5,HIGH);       //IN2 = HIGH -> MotorB get backward.
-        analogWrite(6,(joyY - 512/2));         //PWM Control of MotorB
+        analogWrite(6,255);         //PWM Control of MotorB
       } else {
         digitalWrite(4,HIGH);       //IN1 = HIGH
         digitalWrite(5,HIGH);       //IN2 = HIGH -> MotorB stop 
@@ -110,9 +110,9 @@ PT_THREAD(ShotState(struct pt* pt))
   while (1)
   {
     if(joyButtonsA!=0){
-      digitalWrite(3,HIGH);
+      digitalWrite(2,HIGH);
     } else {
-      digitalWrite(3,LOW);
+      digitalWrite(2,LOW);
     }
     PT_DELAY(pt, 200, ts);
   }
@@ -128,9 +128,9 @@ void setup()
 
   pinMode(8,OUTPUT);   //IN1 MotorB
   pinMode(7,OUTPUT);   //IN2 MotorB
-  pinMode(11,OUTPUT);   //ENA MotorB
+  pinMode(12,OUTPUT);   //ENA MotorB
 
-  pinMode(3,OUTPUT); //Shooting Pin
+  pinMode(2,OUTPUT); //Shooting Pin
   
   Serial.begin( 115200 );
   #if !defined(__MIPSEL__)
