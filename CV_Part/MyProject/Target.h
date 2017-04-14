@@ -8,13 +8,13 @@
 using namespace std;
 using namespace cv;
 
-class Person
+class Target
 {
 public:
-	Person();
-	~Person(void);
+	Target();
+	~Target(void);
 
-	Person(string name);
+	Target(string name);
 
 	int getXPos();
 	void setXPos(int x);

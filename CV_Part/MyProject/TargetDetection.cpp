@@ -3,8 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "Person.h"
-#include "Person.cpp"
+#include "Target.h"
+#include "Target.cpp"
 
 //initial min and max HSV filter values.
 //these will be changed using trackbars
@@ -17,10 +17,8 @@ int V_MAX = 256;
 //default capture width and height
 const int FRAME_WIDTH = 640;
 const int FRAME_HEIGHT = 400;
-//max number of objects to be detected in frame
 const int MAX_NUM_OBJECTS=50;
-//minimum and maximum object area
-const int MIN_OBJECT_AREA = 20*20;
+const int MIN_OBJECT_AREA = 30*30;
 const int MAX_OBJECT_AREA = FRAME_HEIGHT*FRAME_WIDTH/1.5;
 //names that will appear at the top of each window
 const string windowName = "Original Image";
@@ -28,67 +26,50 @@ const string windowName1 = "HSV Image";
 const string windowName2 = "Thresholded Image";
 const string windowName3 = "After Morphological Operations";
 const string trackbarWindowName = "Trackbars";
-void on_trackbar( int, void* )
-{//This function gets called whenever a
-	// trackbar position is changed
 
-
-
-
-
-}
 string intToString(int number){
-
-
 	std::stringstream ss;
 	ss << number;
 	return ss.str();
 }
-void createTrackbars(){
-	//create window for trackbars
 
-
-	namedWindow(trackbarWindowName,0);
-	//create memory to store trackbar name on window
-	char TrackbarName[50];
-	sprintf( TrackbarName, "H_MIN", H_MIN);
-	sprintf( TrackbarName, "H_MAX", H_MAX);
-	sprintf( TrackbarName, "S_MIN", S_MIN);
-	sprintf( TrackbarName, "S_MAX", S_MAX);
-	sprintf( TrackbarName, "V_MIN", V_MIN);
-	sprintf( TrackbarName, "V_MAX", V_MAX);
-	//create trackbars and insert them into window
-	//3 parameters are: the address of the variable that is changing when the trackbar is moved(eg.H_LOW),
-	//the max value the trackbar can move (eg. H_HIGH), 
-	//and the function that is called whenever the trackbar is moved(eg. on_trackbar)
-	//                                  ---->    ---->     ---->      
-	createTrackbar( "H_MIN", trackbarWindowName, &H_MIN, H_MAX, on_trackbar );
-	createTrackbar( "H_MAX", trackbarWindowName, &H_MAX, H_MAX, on_trackbar );
-	createTrackbar( "S_MIN", trackbarWindowName, &S_MIN, S_MAX, on_trackbar );
-	createTrackbar( "S_MAX", trackbarWindowName, &S_MAX, S_MAX, on_trackbar );
-	createTrackbar( "V_MIN", trackbarWindowName, &V_MIN, V_MAX, on_trackbar );
-	createTrackbar( "V_MAX", trackbarWindowName, &V_MAX, V_MAX, on_trackbar );
-
-
-}
-void drawObject(vector<Person> thePersons,Mat &frame){
-	for(int i =0; i<thePersons.size(); i++){
-	cv::rectangle(frame,cv::Point(thePersons.at(i).getXPos()-10,thePersons.at(i).getYPos()-10),cv::Point(thePersons.at(i).getXPos()+10,thePersons.at(i).getYPos()+10),cv::Scalar(0,0,255));
-	cv::putText(frame,intToString(thePersons.at(i).getXPos())+ " , " + intToString(thePersons.at(i).getYPos()),cv::Point(thePersons.at(i).getXPos(),thePersons.at(i).getYPos()+20),1,1,Scalar(0,255,0));
-	cv::putText(frame,thePersons.at(i).getType(),cv::Point(thePersons.at(i).getXPos(),thePersons.at(i).getYPos()-30),1,2,thePersons.at(i).getColour());
+void drawObject(vector<Target> Targets,Mat &frame){
+	for(int i =0; i<Targets.size(); i++){
+		if (Targets.at(i).getXPos() >= 310 && Targets.at(i).getXPos() <= 330 && Targets.at(i).getYPos() >= 190 && Targets.at(i).getYPos() <= 210 )
+		{
+			cv::rectangle(frame,cv::Point(Targets.at(i).getXPos()-10,Targets.at(i).getYPos()-10),cv::Point(Targets.at(i).getXPos()+10,Targets.at(i).getYPos()+10),cv::Scalar(0,0,255));
+			cv::putText(frame,intToString(Targets.at(i).getXPos())+ " , " + intToString(Targets.at(i).getYPos()),cv::Point(Targets.at(i).getXPos(),Targets.at(i).getYPos()+20),0,0.3,Scalar(0,0,255));
+			cv::putText(frame,Targets.at(i).getType(),cv::Point(Targets.at(i).getXPos(),Targets.at(i).getYPos()-30),2,0.5,Scalar(0,0,255));
+			cv::putText(frame,"Target Locked: "+ Targets.at(i).getType(),cv::Point(10,20),0,0.5,Scalar(0,0,255));
+		}
+		else{
+			cv::rectangle(frame,cv::Point(Targets.at(i).getXPos()-10,Targets.at(i).getYPos()-10),cv::Point(Targets.at(i).getXPos()+10,Targets.at(i).getYPos()+10),cv::Scalar(0,255,0));
+			cv::putText(frame,intToString(Targets.at(i).getXPos())+ " , " + intToString(Targets.at(i).getYPos()),cv::Point(Targets.at(i).getXPos(),Targets.at(i).getYPos()+20),0,0.3,Scalar(0,255,0));
+			cv::putText(frame,Targets.at(i).getType(),cv::Point(Targets.at(i).getXPos(),Targets.at(i).getYPos()-30),2,0.5,Targets.at(i).getColour());
+		}
 	}
 }
 void drawLine(Mat &frame){
-	cv::line(frame,cv::Point(0,200),cv::Point(640,200),cv::Scalar(0,0,0));
-        cv::line(frame,cv::Point(320,0),cv::Point(320,400),cv::Scalar(0,0,0));
+    cv::line(frame,cv::Point(0,200),cv::Point(640,200),cv::Scalar(0,0,0));
+    cv::line(frame,cv::Point(320,0),cv::Point(320,120),cv::Scalar(0,0,0),3);
+    cv::line(frame,cv::Point(0,200),cv::Point(240,200),cv::Scalar(0,0,0),3);
+    cv::line(frame,cv::Point(400,200),cv::Point(640,200),cv::Scalar(0,0,0),3);
+    cv::line(frame,cv::Point(320,0),cv::Point(320,400),cv::Scalar(0,0,0));
+    int Range = 0;
+    for (int i = 200; i < 400; i += 15.5)
+    {
+
+        cv::line(frame,cv::Point(313,i),cv::Point(327,i),cv::Scalar(0,0,0));
+	if(Range % 100 ==0 && Range!=0){
+	     cv::putText(frame,intToString(Range)+"m.",cv::Point(330,i),2,0.25,Scalar(0,0,0));
+	}
+	Range += 50;
+    }
+
 }
 void morphOps(Mat &thresh){
 
-	//create structuring element that will be used to "dilate" and "erode" image.
-	//the element chosen here is a 3px by 3px rectangle
-
 	Mat erodeElement = getStructuringElement( MORPH_RECT,Size(3,3));
-	//dilate with larger element so make sure object is nicely visible
 	Mat dilateElement = getStructuringElement( MORPH_RECT,Size(8,8));
 
 	erode(thresh,thresh,erodeElement);
@@ -103,40 +84,30 @@ void morphOps(Mat &thresh){
 }
 void trackFilteredObject(Mat threshold,Mat HSV, Mat &cameraFeed){
 
-	vector <Person> enemys;
+	vector <Target> orange_cans;
 
 	Mat temp;
 	threshold.copyTo(temp);
-	//these two vectors needed for output of findContours
 	vector< vector<Point> > contours;
 	vector<Vec4i> hierarchy;
-	//find contours of filtered image using openCV findContours function
 	findContours(temp,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
-	//use moments method to find our filtered object
 	double refArea = 0;
 	bool objectFound = false;
 	if (hierarchy.size() > 0) {
 		int numObjects = hierarchy.size();
-		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
 		if(numObjects<MAX_NUM_OBJECTS){
 			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
-
 				Moments moment = moments((cv::Mat)contours[index]);
 				double area = moment.m00;
-
-				//if the area is less than 20 px by 20px then it is probably just noise
-				//if the area is the same as the 3/2 of the image size, probably just a bad filter
-				//we only want the object with the largest area so we safe a reference area each
-				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Person enemy;
+					Target orange_can;
 					
-					enemy.setXPos(moment.m10/area);
-					enemy.setYPos(moment.m01/area);
+					orange_can.setXPos(moment.m10/area);
+					orange_can.setYPos(moment.m01/area);
 					
 
-					enemys.push_back(enemy);
+					orange_cans.push_back(orange_can);
 
 					objectFound = true;
 
@@ -147,15 +118,15 @@ void trackFilteredObject(Mat threshold,Mat HSV, Mat &cameraFeed){
 			//let user know you found an object
 			if(objectFound ==true){
 				//draw object location on screen
-				drawObject(enemys,cameraFeed);}
+				drawObject(orange_cans,cameraFeed);}
 
 		}else putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
 	}
 }
-void trackFilteredObject(Person thePerson,Mat threshold,Mat HSV, Mat &cameraFeed){
+void trackFilteredObject(Target thePerson,Mat threshold,Mat HSV, Mat &cameraFeed){
 
 	
-	vector <Person> enemys;
+	vector <Target> orange_cans;
 	drawLine(cameraFeed);
 	Mat temp;
 	threshold.copyTo(temp);
@@ -182,14 +153,14 @@ void trackFilteredObject(Person thePerson,Mat threshold,Mat HSV, Mat &cameraFeed
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Person enemy;
+					Target orange_can;
 					
-					enemy.setXPos(moment.m10/area);
-					enemy.setYPos(moment.m01/area);
-					enemy.setType(thePerson.getType());
-					enemy.setColour(thePerson.getColour());
+					orange_can.setXPos(moment.m10/area);
+					orange_can.setYPos(moment.m01/area);
+					orange_can.setType(thePerson.getType());
+					orange_can.setColour(thePerson.getColour());
 
-					enemys.push_back(enemy);
+					orange_cans.push_back(orange_can);
 
 					objectFound = true;
 
@@ -200,26 +171,17 @@ void trackFilteredObject(Person thePerson,Mat threshold,Mat HSV, Mat &cameraFeed
 			//let user know you found an object
 			if(objectFound ==true){
 				//draw object location on screen
-				drawObject(enemys,cameraFeed);}
+				drawObject(orange_cans,cameraFeed);}
 
 		}else putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
 	}
 }
 int main(int argc, char* argv[])
 {
-	//if we would like to calibrate our filter values, set to true.
-	bool calibrationMode = false;
-	
-	//Matrix to store each frame of the webcam feed
 	Mat cameraFeed;
 	Mat threshold;
 	Mat HSV;
 
-	if(calibrationMode){
-		//create slider bars for HSV filtering
-		createTrackbars();
-	}
-	//video capture object to acquire webcam feed
 	VideoCapture capture;
 	//open capture object at location zero (default location for webcam)
 	capture.open(0);
@@ -233,34 +195,21 @@ int main(int argc, char* argv[])
 		capture.read(cameraFeed);
 		//convert frame from BGR to HSV colorspace
 		cvtColor(cameraFeed,HSV,COLOR_BGR2HSV);
-
-		if(calibrationMode==true){
-		//if in calibration mode, we track objects based on the HSV slider values.
-		cvtColor(cameraFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,Scalar(H_MIN,S_MIN,V_MIN),Scalar(H_MAX,S_MAX,V_MAX),threshold);
-		morphOps(threshold);
-		imshow(windowName2,threshold);
-		trackFilteredObject(threshold,HSV,cameraFeed);
-		}else{
 		//create some temp fruit objects so that
 		//we can use their member functions/information
-		Person enemy("enemy"), hostage("hostage");
+		Target orange_can("orange can"), blue_can("blue can");
 
 		
-		//first find enemys
+		//first find orange_cans
 		cvtColor(cameraFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,enemy.getHSVmin(),enemy.getHSVmax(),threshold);
+		inRange(HSV,orange_can.getHSVmin(),orange_can.getHSVmax(),threshold);
 		morphOps(threshold);
-		trackFilteredObject(enemy,threshold,HSV,cameraFeed);
-		//then hostages
+		trackFilteredObject(orange_can,threshold,HSV,cameraFeed);
+		//then blue_cans
 		cvtColor(cameraFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,hostage.getHSVmin(),hostage.getHSVmax(),threshold);
+		inRange(HSV,blue_can.getHSVmin(),blue_can.getHSVmax(),threshold);
 		morphOps(threshold);
-		trackFilteredObject(hostage,threshold,HSV,cameraFeed);
-
-
-
-		}
+		trackFilteredObject(blue_can,threshold,HSV,cameraFeed);
 
 		//show frames 
 		//imshow(windowName2,threshold);
